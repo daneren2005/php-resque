@@ -249,8 +249,12 @@ class Resque_Job
 		if($status->isTracking()) {
 			$monitor = true;
 		}
+		
+		Resque_Event::trigger('onRecreate', array(
+			'job' => $this,
+		));
 
-		return self::create($this->queue, $this->payload['class'], $this->getArguments(), $monitor);
+		return self::create($this->queue, $this->payload['class'], $this->getArguments(), $monitor, $this->payload['id']);
 	}
 
 	/**
