@@ -248,6 +248,7 @@ class Resque_Job
 		$monitor = false;
 		if($status->isTracking()) {
 			$monitor = true;
+			$status->update(Resque_Job_Status::STATUS_WAITING);
 		}
 		
 		Resque_Event::trigger('onRecreate', array(
