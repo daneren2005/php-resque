@@ -435,6 +435,11 @@ class Resque_Worker
 			$this->logger->log(Psr\Log\LogLevel::DEBUG, 'Child {child} found, killing.', array('child' => $this->child));
 			posix_kill($this->child, SIGKILL);
 			$this->child = null;
+			
+			// Update job
+			if($this->currentJob) {
+				$this->currentJob->recreate();
+			}
 		}
 		else {
 			$this->logger->log(Psr\Log\LogLevel::INFO, 'Child {child} not found, restarting.', array('child' => $this->child));
