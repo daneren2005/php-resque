@@ -26,7 +26,7 @@ class Resque
 	/**
 	 * @var int ID of Redis database to select.
 	 */
-	protected static $redisDatabase = 0;
+	protected static $redisDatabase = null;
 
 	/**
 	 * Given a host/port combination separated by a colon, set it as
@@ -38,7 +38,7 @@ class Resque
 	 *                      a nested array of servers with host/port pairs.
 	 * @param int $database
 	 */
-	public static function setBackend($server, $database = 0)
+	public static function setBackend($server, $database = null)
 	{
 		self::$redisServer   = $server;
 		self::$redisDatabase = $database;
