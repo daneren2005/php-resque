@@ -231,7 +231,7 @@ class Resque_Worker
 				}
 				else
 				{
-					if (in_array($job->getStatus(), array(Resque_Job_Status::STATUS_WAITING, Resque_Job_Status::STATUS_RUNNING)))
+					if (in_array($job->getStatus(), array(Resque_Job_Status::STATUS_RUNNING)))
 					{
 						$job->updateStatus(Resque_Job_Status::STATUS_COMPLETE);
 						$this->logger->log(Psr\Log\LogLevel::INFO, 'done' . $job);
