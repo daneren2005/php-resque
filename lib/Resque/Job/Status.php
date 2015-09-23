@@ -53,6 +53,7 @@ class Resque_Job_Status
 		$statusPacket = array(
 			'status' => self::STATUS_WAITING,
 			'updated' => time(),
+			self::statusToString(self::STATUS_WAITING) => time(),
 			'started' => time(),
 		);
 		Resque::redis()->set('job:' . $id . ':status', json_encode($statusPacket));
@@ -91,8 +92,13 @@ class Resque_Job_Status
 		}
 
 		$statusPacket = json_decode(Resque::redis()->get((string)$this), true);
+		if(!$statusPacket) {
+			$statusPacket = array();
+		}
+
 		$statusPacket['status'] = $status;
 		$statusPacket['updated'] = time();
+		$statusPacket[self::statusToString($status)] = time();
 
 		Resque::redis()->set((string)$this, json_encode($statusPacket));
 
@@ -138,6 +144,18 @@ class Resque_Job_Status
 	public function __toString()
 	{
 		return 'job:' . $this->id . ':status';
+	}
+
+	private static function statusToString($status) {
+		if ($status == self::STATUS_WAITING) {
+			return 'waiting';
+		} elseif ($status == self::STATUS_RUNNING) {
+			return 'running';
+		} elseif ($status == self::STATUS_FAILED) {
+			return 'failed';
+		} else {
+			return 'complete';
+		}
 	}
 }
 ?>
