@@ -150,7 +150,7 @@ class Resque_Job_Status
 		return 'job:' . $this->id . ':status';
 	}
 
-	private static function statusToString($status) {
+	public static function statusToString($status) {
 		if ($status == self::STATUS_WAITING) {
 			return 'waiting';
 		} elseif ($status == self::STATUS_RUNNING) {
