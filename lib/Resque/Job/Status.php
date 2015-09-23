@@ -90,10 +90,10 @@ class Resque_Job_Status
 			return;
 		}
 
-		$statusPacket = array(
-			'status' => $status,
-			'updated' => time(),
-		);
+		$statusPacket = json_decode(Resque::redis()->get((string)$this), true);
+		$statusPacket['status'] = $status;
+		$statusPacket['updated'] = time();
+
 		Resque::redis()->set((string)$this, json_encode($statusPacket));
 
 		// Expire the status for completed jobs after 24 hours
