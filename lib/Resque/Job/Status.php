@@ -56,7 +56,11 @@ class Resque_Job_Status
 			self::statusToString(self::STATUS_WAITING) => time(),
 			'started' => time(),
 		);
-		Resque::redis()->set('job:' . $id . ':status', json_encode($statusPacket));
+
+		$key = 'job:' . $id . ':status';
+		Resque::redis()->set($key, json_encode($statusPacket));
+		// Don't keep statuses forever
+		Resque::redis()->expire($key, 86400);
 	}
 
 	/**
