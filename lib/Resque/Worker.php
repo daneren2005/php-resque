@@ -224,7 +224,7 @@ class Resque_Worker
 					usleep(250000);
 				}
 				$exitStatus = pcntl_wexitstatus($status);
-				if($exitStatus !== 0) {
+				if($exitStatus !== 0 && !$this->shutdown) {
 					$job->fail(new Resque_Job_DirtyExitException(
 						'Job exited with exit code ' . $exitStatus
 					));
