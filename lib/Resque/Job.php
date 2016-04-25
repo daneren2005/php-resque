@@ -253,6 +253,7 @@ class Resque_Job
 			$status->update(Resque_Job_Status::STATUS_WAITING);
 		}
 
+		$this->worker->logger->log(Psr\Log\LogLevel::NOTICE, 'Requeing {job}', array('job' => $this));
 		Resque::redis()->lrem('working:' . $this->queue, 0, $this->payload['id']);
 		Resque_Event::trigger('onRecreate', array(
 			'job' => $this,
