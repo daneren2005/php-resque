@@ -193,6 +193,7 @@ class Resque_Job
 	{
 		try {
 			Resque_Event::trigger('beforePerform', $this);
+			Resque::redis()->lpush('working:' . $this->queue, $this->payload['id']);
 
 			$instance = $this->getInstance();
 			if(method_exists($instance, 'setUp')) {
@@ -205,6 +206,7 @@ class Resque_Job
 				$instance->tearDown();
 			}
 
+			Resque::redis()->lrem('working:' . $this->queue, 0, $this->payload['id']);
 			Resque_Event::trigger('afterPerform', $this);
 		}
 		// beforePerform/setUp have said don't perform this job. Return.
@@ -220,8 +222,8 @@ class Resque_Job
 	 *
 	 * @param $exception
 	 */
-	public function fail($exception)
-	{
+	public function fail($exception) {
+		Resque::redis()->lrem('working:' . $this->queue, 0, $this->payload['id']);
 		Resque_Event::trigger('onFailure', array(
 			'exception' => $exception,
 			'job' => $this,
@@ -250,7 +252,8 @@ class Resque_Job
 			$monitor = true;
 			$status->update(Resque_Job_Status::STATUS_WAITING);
 		}
-		
+
+		Resque::redis()->lrem('working:' . $this->queue, 0, $this->payload['id']);
 		Resque_Event::trigger('onRecreate', array(
 			'job' => $this,
 		));

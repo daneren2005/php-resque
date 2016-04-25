@@ -190,6 +190,17 @@ class Resque
 	}
 
 	/**
+	 * Return the size (number of working jobs) of the specified queue.
+	 *
+	 * @param string $queue name of the queue to be checked for working jobs
+	 *
+	 * @return int The size of the working queue.
+	 */
+	public static function sizeWorking($queue) {
+		return Resque::redis()->llen('working:' . $queue);
+	}
+
+	/**
 	 * Create a new job and save it to the specified queue.
 	 *
 	 * @param string $queue The name of the queue to place the job in.
