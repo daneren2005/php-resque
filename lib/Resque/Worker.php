@@ -216,8 +216,11 @@ class Resque_Worker
 			if($this->child > 0) {
 				// Parent process, sit and wait
 				$status = 'Forked ' . $this->child . ' at ' . strftime('%F %T');
-				$this->updateProcLine($status);
-				$this->logger->log(Psr\Log\LogLevel::INFO, $status);
+				$this->updateProcLine('Forked ' . $this->child . ' at ' . strftime('%F %T'));
+				$this->logger->log(Psr\Log\LogLevel::INFO, 'Forked {child} for {worker}', Array(
+					'child' => $this->child,
+					'worker' => $this
+				));
 
 				// Wait until the child process finishes before continuing
 				while(pcntl_waitpid($this->child, $status, WNOHANG) == 0) {
