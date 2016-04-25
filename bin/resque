@@ -153,6 +153,23 @@ if($count > 1) {
 				}
 				usleep(250000);
 				if ($GLOBALS['send_signal'] !== FALSE){
+					$killSignal = '';
+					switch($GLOBALS['send_signal']) {
+						case 2:
+							$killSignal = 'SIGINT';
+							break;
+						case 3:
+							$killSignal = 'SIGQUIT';
+							break;
+						case 15:
+							$killSignal = 'SIGTERM';
+							break;
+					}
+					if($killSignal) {
+						$logger->log(Psr\Log\LogLevel::NOTICE, 'Received signal {signal}', array('signal' => $killSignal));
+					}
+
+
 					foreach ($children as $k => $v){
 						posix_kill($k, $GLOBALS['send_signal']);
 						if (in_array($GLOBALS['send_signal'], $die_signals)) {
