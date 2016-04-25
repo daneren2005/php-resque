@@ -223,21 +223,21 @@ class Resque_Worker
 				));
 
 				// Wait until the child process finishes before continuing
-				while(pcntl_waitpid($this->child, $status, WNOHANG) == 0) {
+				while(pcntl_waitpid($this->child, $status, WNOHANG) == 0 && !$this->shutdown) {
 					usleep(250000);
 				}
-				$exitStatus = pcntl_wexitstatus($status);
-				if($exitStatus !== 0 && !$this->shutdown) {
-					$job->fail(new Resque_Job_DirtyExitException(
-						'Job exited with exit code ' . $exitStatus
-					));
-				}
-				else
-				{
-					if (in_array($job->getStatus(), array(Resque_Job_Status::STATUS_RUNNING)))
-					{
-						$job->updateStatus(Resque_Job_Status::STATUS_COMPLETE);
-						$this->logger->log(Psr\Log\LogLevel::INFO, 'done' . $job);
+
+				if(!$this->shutdown) {
+					$exitStatus = pcntl_wexitstatus($status);
+					if ($exitStatus !== 0) {
+						$job->fail(new Resque_Job_DirtyExitException(
+							'Job exited with exit code ' . $exitStatus
+						));
+					} else {
+						if (in_array($job->getStatus(), array(Resque_Job_Status::STATUS_RUNNING))) {
+							$job->updateStatus(Resque_Job_Status::STATUS_COMPLETE);
+							$this->logger->log(Psr\Log\LogLevel::INFO, 'done' . $job);
+						}
 					}
 				}
 			}
