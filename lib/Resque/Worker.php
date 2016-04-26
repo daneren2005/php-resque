@@ -409,7 +409,7 @@ class Resque_Worker
 	public function shutdown()
 	{
 		$this->shutdown = true;
-		$this->logger->log(Psr\Log\LogLevel::NOTICE, 'Shutting down');
+		$this->logger->log(Psr\Log\LogLevel::NOTICE, 'Shutting down {worker}', Array('worker' => $this));
 	}
 
 	/**
