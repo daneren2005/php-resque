@@ -416,8 +416,29 @@ class Resque_Worker
 	 * Force an immediate shutdown of the worker, killing any child jobs
 	 * currently running.
 	 */
-	public function shutdownNow()
+	public function shutdownNow($signal = null)
 	{
+		if($signal) {
+			$killSignal = '';
+			switch($signal) {
+				case 2:
+					$killSignal = 'SIGINT';
+					break;
+				case 3:
+					$killSignal = 'SIGQUIT';
+					break;
+				case 15:
+					$killSignal = 'SIGTERM';
+					break;
+			}
+			if($killSignal) {
+				$this->logger->log(Psr\Log\LogLevel::NOTICE, 'Received signal {signal} for {worker}', array(
+					'signal' => $killSignal,
+					'worker' => $this
+				));
+			}
+		}
+
 		$this->shutdown();
 		$this->killChild();
 	}

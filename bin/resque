@@ -103,7 +103,9 @@ if($count > 1) {
 	
 	$die_signals = array(SIGTERM, SIGINT, SIGQUIT);
 	$all_signals = array_merge($die_signals, array(SIGUSR1, SIGUSR2, SIGCONT, SIGPIPE));
-	
+
+	$logger->log(Psr\Log\LogLevel::DEBUG, 'Starting parent monitor {monitor}', array('monitor' => getmypid()));
+
 	for($i = 0; $i < $count; ++$i) {
 		$pid = Resque::fork();
 		if($pid == -1) {
@@ -129,7 +131,7 @@ if($count > 1) {
 					foreach ($all_signals as $signal) {
 						pcntl_signal($signal,  "cleanup_children");
 					}
-					
+
 					$PIDFILE = getenv('PIDFILE');
 					if ($PIDFILE) {
 						if(file_put_contents($PIDFILE, getmypid()) === false){
@@ -137,19 +139,19 @@ if($count > 1) {
                                                         die(2);
                                                 }
 					}
-					
+
 					$registered = TRUE;
 				}
-				
+
 				if(function_exists('setproctitle')) {
 					setproctitle('resque-' . Resque::VERSION . ": Monitoring {$count} children: [".implode(',', array_keys($children))."]");
 				}
-				
+
 				$childPID = pcntl_waitpid(-1, $childStatus, WNOHANG);
 				if ($childPID != 0) {
 					$logger->log(Psr\Log\LogLevel::NOTICE, 'A child worker died: {pid}', array('pid' => $childPID));
 					unset($children[$childPID]);
-					$i--;					
+					$i--;
 				}
 				usleep(250000);
 				if ($GLOBALS['send_signal'] !== FALSE){
@@ -166,11 +168,16 @@ if($count > 1) {
 							break;
 					}
 					if($killSignal) {
-						$logger->log(Psr\Log\LogLevel::NOTICE, 'Received signal {signal}', array('signal' => $killSignal));
+						$logger->log(Psr\Log\LogLevel::NOTICE, 'Received signal {signal} for monitor', array('signal' => $killSignal));
 					}
 
 					foreach ($children as $k => $v){
-						posix_kill($k, $GLOBALS['send_signal']);
+						$signal = $GLOBALS['send_signal'];
+						if($signal == 15) {
+							$signal = 2;
+						}
+
+						posix_kill($k, $signal);
 					}
 
 					if (in_array($GLOBALS['send_signal'], $die_signals)) {
