@@ -418,8 +418,8 @@ class Resque_Worker
 	 */
 	public function shutdownNow($signal = null)
 	{
+		$killSignal = '';
 		if($signal) {
-			$killSignal = '';
 			switch($signal) {
 				case 2:
 					$killSignal = 'SIGINT';
@@ -431,16 +431,24 @@ class Resque_Worker
 					$killSignal = 'SIGTERM';
 					break;
 			}
+		}
+
+		if($this->shutdown) {
+			$this->logger->log(Psr\Log\LogLevel::NOTICE, 'Already shutdown for {worker}, ignoring {signal}', array(
+				'signal' => $killSignal,
+				'worker' => $this
+			));
+		} else {
 			if($killSignal) {
 				$this->logger->log(Psr\Log\LogLevel::NOTICE, 'Received signal {signal} for {worker}', array(
 					'signal' => $killSignal,
 					'worker' => $this
 				));
 			}
-		}
 
-		$this->shutdown();
-		$this->killChild();
+			$this->shutdown();
+			$this->killChild();
+		}
 	}
 
 	/**
