@@ -151,7 +151,7 @@ if($count > 1) {
 					unset($children[$childPID]);
 					$i--;					
 				}
-				usleep(1000000);
+				usleep(250000);
 				if ($GLOBALS['send_signal'] !== FALSE){
 					$killSignal = '';
 					switch($GLOBALS['send_signal']) {
@@ -169,13 +169,27 @@ if($count > 1) {
 						$logger->log(Psr\Log\LogLevel::NOTICE, 'Received signal {signal}', array('signal' => $killSignal));
 					}
 
-					foreach ($children as $k => $v){
-						posix_kill($k, $GLOBALS['send_signal']);
-						if (in_array($GLOBALS['send_signal'], $die_signals)) {
-							pcntl_waitpid($k, $childStatus);
-						}
-					}
 					if (in_array($GLOBALS['send_signal'], $die_signals)) {
+						// Wait up to a maximum of 10 seconds
+						$waitCount = 0;
+						$maxWaits = 40;
+						while(count($children) > 0) {
+							foreach ($children as $k => $v) {
+								if ($waitCount < $maxWaits) {
+									if (pcntl_waitpid($k, $childStatus, WNOHANG) == 0) {
+										usleep(250000);
+										$waitCount++;
+										break;
+									} else {
+										unset($children[$k]);
+									}
+								} else {
+									posix_kill($k, $GLOBALS['send_signal']);
+									pcntl_waitpid($k, $childStatus);
+								}
+							}
+						}
+
 						$logger->log(Psr\Log\LogLevel::NOTICE, 'Finished sending signal {signal} to all children', array('signal' => $killSignal));
 						exit;
 					}
