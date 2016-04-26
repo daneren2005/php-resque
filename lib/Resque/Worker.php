@@ -457,7 +457,9 @@ class Resque_Worker
 	public function killChild()
 	{
 		if(!$this->child) {
-			$this->logger->log(Psr\Log\LogLevel::DEBUG, 'No child to kill.');
+			$this->logger->log(Psr\Log\LogLevel::DEBUG, 'No child to kill for {worker}', Array(
+				'worker' => $this
+			));
 			return;
 		}
 
