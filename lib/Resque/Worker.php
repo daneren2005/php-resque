@@ -380,7 +380,6 @@ class Resque_Worker
 		pcntl_signal(SIGUSR1, array($this, 'killChild'));
 		pcntl_signal(SIGUSR2, array($this, 'pauseProcessing'));
 		pcntl_signal(SIGCONT, array($this, 'unPauseProcessing'));
-		$this->logger->log(Psr\Log\LogLevel::DEBUG, 'Registered signals');
 	}
 
 	/**
