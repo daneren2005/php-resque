@@ -172,6 +172,10 @@ if($count > 1) {
 					}
 
 					foreach ($children as $k => $v){
+						$logger->log(Psr\Log\LogLevel::DEBUG, 'Sending signal {signal} to pid {pid}', array(
+							'signal' => $killSignal,
+							'pid' => $k
+						));
 						posix_kill($k, $GLOBALS['send_signal']);
 					}
 					$logger->log(Psr\Log\LogLevel::NOTICE, 'Propagated signal {signal} to children (kill = {kill})', array(
