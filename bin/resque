@@ -151,7 +151,7 @@ if($count > 1) {
 					unset($children[$childPID]);
 					$i--;					
 				}
-				usleep(250000);
+				usleep(1000000);
 				if ($GLOBALS['send_signal'] !== FALSE){
 					$killSignal = '';
 					switch($GLOBALS['send_signal']) {
