@@ -171,14 +171,9 @@ if($count > 1) {
 						$logger->log(Psr\Log\LogLevel::NOTICE, 'Received signal {signal} for monitor', array('signal' => $killSignal));
 					}
 
-					foreach ($children as $k => $v){
-						$signal = $GLOBALS['send_signal'];
-						if($signal == 15) {
-							$signal = 2;
-						}
-
-						posix_kill($k, $signal);
-					}
+					/*foreach ($children as $k => $v){
+						posix_kill($k, $GLOBALS['send_signal']);
+					}*/
 
 					if (in_array($GLOBALS['send_signal'], $die_signals)) {
 						foreach ($children as $k => $v){
