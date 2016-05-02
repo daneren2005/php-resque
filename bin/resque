@@ -94,28 +94,6 @@ if(!empty($PREFIX)) {
 }
 
 function cleanup_children($signal){
-	$killSignal = '';
-	if($signal) {
-		switch($signal) {
-			case 2:
-				$killSignal = 'SIGINT';
-				break;
-			case 3:
-				$killSignal = 'SIGQUIT';
-				break;
-			case 15:
-				$killSignal = 'SIGTERM';
-				break;
-		}
-	}
-
-	if($killSignal) {
-		$GLOBALS['logger']->log(Psr\Log\LogLevel::NOTICE, 'Received signal {signal} for monitor {monitor}', array(
-			'signal' => $killSignal,
-			'monitor' => getmypid()
-		));
-	}
-
 	$GLOBALS['send_signal'] = $signal;
 }
 
@@ -177,6 +155,28 @@ if($count > 1) {
 				}
 				usleep(250000);
 				if ($GLOBALS['send_signal'] !== FALSE){
+					$killSignal = '';
+					if($signal) {
+						switch($signal) {
+							case 2:
+								$killSignal = 'SIGINT';
+								break;
+							case 3:
+								$killSignal = 'SIGQUIT';
+								break;
+							case 15:
+								$killSignal = 'SIGTERM';
+								break;
+						}
+					}
+
+					if($killSignal) {
+						$logger->log(Psr\Log\LogLevel::NOTICE, 'Received signal {signal} for monitor {monitor}', array(
+							'signal' => $killSignal,
+							'monitor' => getmypid()
+						));
+					}
+
 					foreach ($children as $k => $v){
 						$logger->log(Psr\Log\LogLevel::DEBUG, 'Sending signal {signal} to pid {pid}', array(
 							'signal' => $killSignal,
