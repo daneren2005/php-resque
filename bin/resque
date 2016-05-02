@@ -156,7 +156,7 @@ if($count > 1) {
 				usleep(250000);
 				if ($GLOBALS['send_signal'] !== FALSE){
 					$killSignal = '';
-					if($signal) {
+					if($GLOBALS['send_signal']) {
 						switch($signal) {
 							case 2:
 								$killSignal = 'SIGINT';
