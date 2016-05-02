@@ -176,6 +176,7 @@ if($count > 1) {
 							'monitor' => getmypid()
 						));
 					}
+					sleep(1);
 
 					foreach ($children as $k => $v){
 						$logger->log(Psr\Log\LogLevel::DEBUG, 'Sending signal {signal} to pid {pid}', array(
@@ -184,6 +185,8 @@ if($count > 1) {
 						));
 						posix_kill($k, $GLOBALS['send_signal']);
 					}
+					sleep(1);
+
 					$logger->log(Psr\Log\LogLevel::NOTICE, 'Propagated signal {signal} to children (kill = {kill})', array(
 						'signal' => $killSignal,
 						'kill' => in_array($GLOBALS['send_signal'], $die_signals) ? 'true' : 'false'
@@ -191,6 +194,9 @@ if($count > 1) {
 
 					if (in_array($GLOBALS['send_signal'], $die_signals)) {
 						foreach ($children as $k => $v){
+							$logger->log(Psr\Log\LogLevel::DEBUG, 'Waiting for {pid}', array(
+								'pid' => $k
+							));
 							pcntl_waitpid($k, $childStatus);
 						}
 
