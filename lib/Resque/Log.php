@@ -27,7 +27,7 @@ class Resque_Log extends Psr\Log\AbstractLogger
 		if ($this->verbose) {
 			fwrite(
 				STDOUT,
-				'[' . $level . '] [' . strftime('%T %Y-%m-%d') . '] [' . getmypid() . ']' . $this->interpolate($message, $context) . PHP_EOL
+				'[' . $level . '] [' . strftime('%T %Y-%m-%d') . '] [' . getmypid() . '] ' . $this->interpolate($message, $context) . PHP_EOL
 			);
 			return;
 		}
