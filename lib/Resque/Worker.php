@@ -152,6 +152,7 @@ class Resque_Worker
 	 */
 	public function work($interval = Resque::DEFAULT_INTERVAL, $blocking = false)
 	{
+		declare(ticks = 1);
 		$this->updateProcLine('Starting');
 		$this->startup();
 
