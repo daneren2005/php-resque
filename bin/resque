@@ -127,7 +127,7 @@ if($count > 1) {
 			$children[$pid] = 1;
 			while (count($children) == $count){
 				if (!isset($registered)) {
-					declare(ticks = 1);
+					pcntl_async_signals(true);
 					foreach ($all_signals as $signal) {
 						pcntl_signal($signal,  "cleanup_children");
 					}

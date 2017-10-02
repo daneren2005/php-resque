@@ -152,7 +152,6 @@ class Resque_Worker
 	 */
 	public function work($interval = Resque::DEFAULT_INTERVAL, $blocking = false)
 	{
-		declare(ticks = 1);
 		$this->updateProcLine('Starting');
 		$this->startup();
 
@@ -374,7 +373,7 @@ class Resque_Worker
 			return;
 		}
 
-		declare(ticks = 1);
+		pcntl_async_signals();
 		pcntl_signal(SIGTERM, array($this, 'shutdownNow'));
 		pcntl_signal(SIGINT, array($this, 'shutdownNow'));
 		pcntl_signal(SIGQUIT, array($this, 'shutdown'));
