@@ -433,13 +433,13 @@ class Resque_Worker
 		}
 
 		if($this->shutdown) {
-			$this->logger->log(Psr\Log\LogLevel::NOTICE, 'Already shutdown for {worker}, ignoring {signal}', array(
+			$this->logger->log(Psr\Log\LogLevel::DEBUG, 'Already shutdown for {worker}, ignoring {signal}', array(
 				'signal' => $killSignal,
 				'worker' => $this
 			));
 		} else {
 			if($killSignal) {
-				$this->logger->log(Psr\Log\LogLevel::NOTICE, 'Received signal {signal} for {worker}', array(
+				$this->logger->log(Psr\Log\LogLevel::DEBUG, 'Received signal {signal} for {worker}', array(
 					'signal' => $killSignal,
 					'worker' => $this
 				));

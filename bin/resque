@@ -171,7 +171,7 @@ if($count > 1) {
 					}
 
 					if($killSignal) {
-						$logger->log(Psr\Log\LogLevel::NOTICE, 'Received signal {signal} for monitor {monitor}', array(
+						$logger->log(Psr\Log\LogLevel::DEBUG, 'Received signal {signal} for monitor {monitor}', array(
 							'signal' => $killSignal,
 							'monitor' => getmypid()
 						));
@@ -198,7 +198,7 @@ if($count > 1) {
 							pcntl_waitpid($k, $childStatus);
 						}
 
-						$logger->log(Psr\Log\LogLevel::NOTICE, 'Finished sending signal {signal} to all children', array('signal' => $killSignal));
+						$logger->log(Psr\Log\LogLevel::NOTICE, 'Finished shutting down all children', array('signal' => $killSignal));
 						exit;
 					}
 					$GLOBALS['send_signal'] = FALSE;
