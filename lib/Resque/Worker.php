@@ -373,7 +373,7 @@ class Resque_Worker
 			return;
 		}
 
-		pcntl_async_signals();
+		pcntl_async_signals(true);
 		pcntl_signal(SIGTERM, array($this, 'shutdownNow'));
 		pcntl_signal(SIGINT, array($this, 'shutdownNow'));
 		pcntl_signal(SIGQUIT, array($this, 'shutdown'));
