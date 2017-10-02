@@ -157,7 +157,7 @@ if($count > 1) {
 				if ($GLOBALS['send_signal'] !== FALSE){
 					$killSignal = '';
 					if($GLOBALS['send_signal']) {
-						switch($signal) {
+						switch($GLOBALS['send_signal']) {
 							case 2:
 								$killSignal = 'SIGINT';
 								break;
