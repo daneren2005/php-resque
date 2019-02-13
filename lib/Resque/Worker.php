@@ -472,6 +472,10 @@ class Resque_Worker
 			// Update job
 			if($this->currentJob) {
 				$this->currentJob->recreate();
+				
+				if(!Resque::redis()->ping()) {
+					$this->logger->log(Psr\Log\LogLevel::EMERGENCY, 'Redis instance is not active!');
+				}
 			}
 		}
 		else {
