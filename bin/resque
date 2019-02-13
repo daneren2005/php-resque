@@ -199,6 +199,9 @@ if($count > 1) {
 						}
 
 						$logger->log(Psr\Log\LogLevel::NOTICE, 'Finished shutting down all children', array('signal' => $killSignal));
+						if(!Resque::redis()->ping()) {
+							$logger->log(Psr\Log\LogLevel::EMERGENCY, 'Redis was already shut down!', array('signal' => $killSignal));
+						}
 						exit;
 					}
 					$GLOBALS['send_signal'] = FALSE;
