@@ -502,7 +502,7 @@ class Resque_Worker
 				if($host != $this->hostname || in_array($pid, $workerPids) || $pid == getmypid()) {
 					continue;
 				}
-				$this->logger->log(Psr\Log\LogLevel::INFO, 'Pruning dead worker: {worker}', array('worker' => (string)$worker));
+				$this->logger->log(Psr\Log\LogLevel::NOTICE, 'Pruning dead worker: {worker}', array('worker' => (string)$worker));
 				$worker->unregisterWorker();
 			}
 		}
