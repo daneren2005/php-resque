@@ -454,7 +454,7 @@ class Resque_Worker
 	 * Kill a forked child job immediately. The job it is processing will not
 	 * be completed.
 	 */
-	public function killChild()
+	public function killChild($attempt = 1)
 	{
 		if(!$this->child) {
 			$this->logger->log(Psr\Log\LogLevel::DEBUG, 'No child to kill for {worker}', Array(
@@ -469,18 +469,28 @@ class Resque_Worker
 			posix_kill($this->child, SIGKILL);
 			$this->child = null;
 			
-			// Update job
-			if($this->currentJob) {
-				$this->currentJob->recreate();
-				
-				if(!Resque::redis()->ping()) {
-					$this->logger->log(Psr\Log\LogLevel::EMERGENCY, 'Redis instance is not active!');
-				}
-			}
+			$this->checkForRequeueJob();
 		}
-		else {
-			$this->logger->log(Psr\Log\LogLevel::INFO, 'Child {child} not found, restarting.', array('child' => $this->child));
+		elseif($attempt <= 3) {
+			// If we are trying to kill the child before it is started, just wait a moment and retry again
+			$this->logger->log(Psr\Log\LogLevel::WARNING, 'Child {child} not found, retrying in 250ms.', array('child' => $this->child));
+			usleep(250000);
+			$this->killChild($attempt + 1);
+		} else {
+			// If we can never kill the child, exit but make sure to requeue the job since this is broken
+			$this->logger->log(Psr\Log\LogLevel::WARNING, 'Child {child} not found, exiting.', array('child' => $this->child));
+			$this->checkForRequeueJob();
 			$this->shutdown();
+		}
+	}
+	protected function checkForRequeueJob() {
+		// Update job to re-run again later
+		if($this->currentJob) {
+			$this->currentJob->recreate();
+			
+			if(!Resque::redis()->ping()) {
+				$this->logger->log(Psr\Log\LogLevel::EMERGENCY, 'Redis instance is not active!');
+			}
 		}
 	}
 
