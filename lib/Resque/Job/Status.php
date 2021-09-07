@@ -58,9 +58,7 @@ class Resque_Job_Status
 		);
 
 		$key = 'job:' . $id . ':status';
-		Resque::redis()->set($key, json_encode($statusPacket));
-		// Don't keep statuses forever
-		Resque::redis()->expire($key, 86400);
+		Resque::redis()->setex($key, 86400, json_encode($statusPacket));
 	}
 
 	/**
@@ -104,12 +102,7 @@ class Resque_Job_Status
 		$statusPacket['updated'] = time();
 		$statusPacket[self::statusToString($status)] = time();
 
-		Resque::redis()->set((string)$this, json_encode($statusPacket));
-
-		// Expire the status for completed jobs after 24 hours
-		if(in_array($status, self::$completeStatuses)) {
-			Resque::redis()->expire((string)$this, 86400);
-		}
+		Resque::redis()->setex((string)$this, 86400, json_encode($statusPacket));
 	}
 
 	/**
