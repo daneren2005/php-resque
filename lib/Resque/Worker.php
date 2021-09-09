@@ -54,6 +54,15 @@ class Resque_Worker
 	 */
 	private $child = null;
 
+	/**
+	 * @var boolean True if this worker is in the middle of creating a fork of a child
+	 */
+	private $isForking = false;
+	/**
+	 * @var boolean True if this worker received a kill signal mid fork
+	 */
+	private $killForkAfterSetup = false;
+
     /**
      * Instantiate a new worker, given a list of queues that it should be working
      * on. The list of queues should be supplied in the priority that they should
@@ -200,7 +209,14 @@ class Resque_Worker
 			Resque_Event::trigger('beforeFork', $job);
 			$this->workingOn($job);
 
+			$this->isForking = true;
 			$this->child = Resque::fork();
+			$this->isForking = false;
+			// Received sigint mid-fork
+			if($this->killForkAfterSetup) {
+				$this->killChild();
+				return;
+			}
 
 			// Forked and we're the child. Run the job.
 			if ($this->child === 0 || $this->child === false) {
@@ -456,6 +472,13 @@ class Resque_Worker
 	 */
 	public function killChild($attempt = 1)
 	{
+		if($this->isForking && !$this->child) {
+			$this->logger->log(Psr\Log\LogLevel::WARNING, 'No child due to being in the middle of forking for {worker}, exiting until fork is done.', [
+				'worker' => $this
+			]);
+			$this->killForkAfterSetup = true;
+			return;
+		}
 		if(!$this->child) {
 			$this->logger->log(Psr\Log\LogLevel::DEBUG, 'No child to kill for {worker}', Array(
 				'worker' => $this
