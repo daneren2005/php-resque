@@ -246,6 +246,11 @@ class Resque_Worker
 				if(!$this->shutdown) {
 					$exitStatus = pcntl_wexitstatus($status);
 					if ($exitStatus !== 0) {
+						$this->logger->log(Psr\Log\LogLevel::NOTICE, 'Child {child} has failed for {worker}', Array(
+							'child' => $this->child,
+							'worker' => $this
+						));
+
 						$job->fail(new Resque_Job_DirtyExitException(
 							'Job exited with exit code ' . $exitStatus
 						));
@@ -258,8 +263,14 @@ class Resque_Worker
 				}
 			}
 
+			$child = $this->child;
 			$this->child = null;
 			$this->doneWorking();
+
+			$this->logger->log(Psr\Log\LogLevel::INFO, 'Done workering on child {child} for {worker}', Array(
+				'child' => $child,
+				'worker' => $this
+			));
 		}
 
 		$this->unregisterWorker();
