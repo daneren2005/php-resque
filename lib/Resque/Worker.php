@@ -208,6 +208,10 @@ class Resque_Worker
 			$this->logger->log(Psr\Log\LogLevel::NOTICE, 'Starting work on {job}', array('job' => $job));
 			Resque_Event::trigger('beforeFork', $job);
 			$this->workingOn($job);
+			if($this->shutdown) {
+				$this->checkForRequeueJob();
+				break;
+			}
 
 			$this->isForking = true;
 			$this->child = Resque::fork();
