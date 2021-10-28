@@ -206,7 +206,10 @@ class Resque_Job
 				$instance->tearDown();
 			}
 
-			Resque::redis()->lrem('working:' . $this->queue, 0, $this->payload['id']);
+			$removed = Resque::redis()->lrem('working:' . $this->queue, 0, $this->payload['id']);
+			if($removed <= 0) {
+				$this->worker->logger->log(Psr\Log\LogLevel::EMERGENCY, $this->payload['id'] . ' was not removed from working:' . $this->queue);
+			}
 			Resque_Event::trigger('afterPerform', $this);
 		}
 		// beforePerform/setUp have said don't perform this job. Return.

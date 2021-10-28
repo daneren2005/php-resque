@@ -261,7 +261,7 @@ class Resque_Worker
 					} else {
 						if (in_array($job->getStatus(), array(Resque_Job_Status::STATUS_RUNNING))) {
 							$job->updateStatus(Resque_Job_Status::STATUS_COMPLETE);
-							$this->logger->log(Psr\Log\LogLevel::INFO, 'done' . $job);
+							$this->logger->log(Psr\Log\LogLevel::INFO, 'Updating job status as done for ' . $job);
 						}
 					}
 				}
@@ -271,7 +271,7 @@ class Resque_Worker
 			$this->child = null;
 			$this->doneWorking();
 
-			$this->logger->log(Psr\Log\LogLevel::INFO, 'Done workering on child {child} for {worker}', Array(
+			$this->logger->log(Psr\Log\LogLevel::INFO, 'Done working on child {child} for {worker}', Array(
 				'child' => $child,
 				'worker' => $this
 			));
