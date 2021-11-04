@@ -224,10 +224,14 @@ class Resque_Worker
 
 			// Forked and we're the child. Run the job.
 			if ($this->child === 0 || $this->child === false) {
+				$this->logger->log(Psr\Log\LogLevel::DEBUG, 'I am the child and starting to run');
 				$status = 'Processing ' . $job->queue . ' since ' . strftime('%F %T');
 				$this->updateProcLine($status);
 				$this->logger->log(Psr\Log\LogLevel::INFO, $status);
 				$this->perform($job);
+				$this->logger->log(Psr\Log\LogLevel::DEBUG, 'I am the child and done running: {child}', [
+					'child' => $this->child
+				]);
 				if ($this->child === 0) {
 					exit(0);
 				}
@@ -243,9 +247,14 @@ class Resque_Worker
 				));
 
 				// Wait until the child process finishes before continuing
-				while(pcntl_waitpid($this->child, $status, WNOHANG) == 0 && !$this->shutdown) {
+				while($lastWaitPIDStatus = pcntl_waitpid($this->child, $status, WNOHANG) == 0 && !$this->shutdown) {
 					usleep(250000);
 				}
+				$this->logger->log(Psr\Log\LogLevel::DEBUG, 'pcntl_waitpid return status of {status} for child {child} for {worker}', Array(
+					'status' => $lastWaitPIDStatus,
+					'child' => $this->child,
+					'worker' => $this
+				));
 
 				if(!$this->shutdown) {
 					$exitStatus = pcntl_wexitstatus($status);
