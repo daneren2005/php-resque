@@ -247,18 +247,18 @@ class Resque_Worker
 				));
 
 				// Wait until the child process finishes before continuing
-				while($lastWaitPIDStatus = pcntl_waitpid($this->child, $status, WNOHANG) == 0 && !$this->shutdown) {
+				while(pcntl_waitpid($this->child, $status, WNOHANG) == 0 && !$this->shutdown) {
 					usleep(250000);
 				}
 				$this->logger->log(Psr\Log\LogLevel::DEBUG, 'pcntl_waitpid return status of {status} for child {child} for {worker}', Array(
-					'status' => $lastWaitPIDStatus,
+					'status' => $status,
 					'child' => $this->child,
 					'worker' => $this
 				));
 
 				if(!$this->shutdown) {
 					$exitStatus = pcntl_wexitstatus($status);
-					if ($exitStatus !== 0) {
+					if ($exitStatus !== 0 || pcntl_wifexited($status) === FALSE) {
 						$this->logger->log(Psr\Log\LogLevel::NOTICE, 'Child {child} has failed for {worker}', Array(
 							'child' => $this->child,
 							'worker' => $this
