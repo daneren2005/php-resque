@@ -259,9 +259,16 @@ class Resque_Worker
 				if(!$this->shutdown) {
 					$exitStatus = pcntl_wexitstatus($status);
 					if ($exitStatus !== 0 || pcntl_wifexited($status) === FALSE) {
-						$this->logger->log(Psr\Log\LogLevel::NOTICE, 'Child {child} has failed for {worker}', Array(
+						$signal = 'no-signal';
+						if(pcntl_wifsignaled($status)) {
+							$signal = pcntl_wtermsig($status);
+						}
+
+						$this->logger->log(Psr\Log\LogLevel::NOTICE, 'Child {child} has failed with signal {signal} and exit code {exitStatus} for {worker}', Array(
 							'child' => $this->child,
-							'worker' => $this
+							'worker' => $this,
+							'signal' => $signal,
+							'exitStatus' => $exitStatus
 						));
 
 						$job->fail(new Resque_Job_DirtyExitException(
