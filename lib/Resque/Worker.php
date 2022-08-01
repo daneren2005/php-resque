@@ -225,7 +225,7 @@ class Resque_Worker
 			// Forked and we're the child. Run the job.
 			if ($this->child === 0 || $this->child === false) {
 				$this->logger->log(Psr\Log\LogLevel::DEBUG, 'I am the child and starting to run');
-				$status = 'Processing ' . $job->queue . ' since ' . strftime('%F %T');
+				$status = 'Processing ' . $job->queue . ' since ' . date('Y-m-d H:i:s');
 				$this->updateProcLine($status);
 				$this->logger->log(Psr\Log\LogLevel::INFO, $status);
 				$this->perform($job);
@@ -239,8 +239,8 @@ class Resque_Worker
 
 			if($this->child > 0) {
 				// Parent process, sit and wait
-				$status = 'Forked ' . $this->child . ' at ' . strftime('%F %T');
-				$this->updateProcLine('Forked ' . $this->child . ' at ' . strftime('%F %T'));
+				$status = 'Forked ' . $this->child . ' at ' . date('Y-m-d H:i:s');
+				$this->updateProcLine($status);
 				$this->logger->log(Psr\Log\LogLevel::INFO, 'Forked {child} for {worker}', Array(
 					'child' => $this->child,
 					'worker' => $this
@@ -595,7 +595,7 @@ class Resque_Worker
 	public function registerWorker()
 	{
 		Resque::redis()->sadd('workers', (string)$this);
-		Resque::redis()->set('worker:' . (string)$this . ':started', strftime('%a %b %d %H:%M:%S %Z %Y'));
+		Resque::redis()->set('worker:' . (string)$this . ':started', date('D M d H:i:s T Y'));
 	}
 
 	/**
@@ -627,7 +627,7 @@ class Resque_Worker
 		$job->updateStatus(Resque_Job_Status::STATUS_RUNNING);
 		$data = json_encode(array(
 			'queue' => $job->queue,
-			'run_at' => strftime('%a %b %d %H:%M:%S %Z %Y'),
+			'run_at' => date('D M d H:i:s T Y'),
 			'payload' => $job->payload
 		));
 		Resque::redis()->set('worker:' . $job->worker, $data);
