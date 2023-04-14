@@ -194,6 +194,7 @@ class Resque_Job
 		try {
 			Resque_Event::trigger('beforePerform', $this);
 			Resque::redis()->lpush('working:' . $this->queue, $this->payload['id']);
+			Resque::redis()->setex('job:' . $this->payload['id'] . ':worker', 86400, (string)$this->worker);
 
 			$instance = $this->getInstance();
 			if(method_exists($instance, 'setUp')) {
@@ -207,6 +208,7 @@ class Resque_Job
 			}
 
 			$removed = Resque::redis()->lrem('working:' . $this->queue, 0, $this->payload['id']);
+			Resque::redis()->del('job:' . $this->payload['id'] . ':worker');
 			if($removed <= 0) {
 				$this->worker->logger->log(Psr\Log\LogLevel::EMERGENCY, $this->payload['id'] . ' was not removed from working:' . $this->queue);
 			}
@@ -227,6 +229,7 @@ class Resque_Job
 	 */
 	public function fail($exception) {
 		Resque::redis()->lrem('working:' . $this->queue, 0, $this->payload['id']);
+		Resque::redis()->del('job:' . $this->payload['id'] . ':worker');
 		Resque_Event::trigger('onFailure', array(
 			'exception' => $exception,
 			'job' => $this,
@@ -256,8 +259,11 @@ class Resque_Job
 			$status->update(Resque_Job_Status::STATUS_WAITING);
 		}
 
-		$this->worker->logger->log(Psr\Log\LogLevel::NOTICE, 'Requeing {job}', array('job' => $this));
+		if($this->worker) {
+			$this->worker->logger->log(Psr\Log\LogLevel::NOTICE, 'Requeing {job}', array('job' => $this));
+		}
 		Resque::redis()->lrem('working:' . $this->queue, 0, $this->payload['id']);
+		Resque::redis()->del('job:' . $this->payload['id'] . ':worker');
 		Resque_Event::trigger('onRecreate', array(
 			'job' => $this,
 		));
