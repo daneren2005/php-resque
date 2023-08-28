@@ -21,10 +21,11 @@ class ResqueScheduler
 	 * @param string $queue The name of the queue to place the job in.
 	 * @param string $class The name of the class that contains the code to execute the job.
 	 * @param array $args Any optional arguments that should be passed when the job is executed.
+	 * @param boolean $trackStatus Set to true to be able to monitor the status of a job.
 	 */
-	public static function enqueueIn($in, $queue, $class, array $args = array())
+	public static function enqueueIn($in, $queue, $class, array $args = array(), $trackStatus = false)
 	{
-		self::enqueueAt(time() + $in, $queue, $class, $args);
+		return self::enqueueAt(time() + $in, $queue, $class, $args, $trackStatus);
 	}
 
 	/**
@@ -38,20 +39,29 @@ class ResqueScheduler
 	 * @param string $queue The name of the queue to place the job in.
 	 * @param string $class The name of the class that contains the code to execute the job.
 	 * @param array $args Any optional arguments that should be passed when the job is executed.
+	 * @param boolean $trackStatus Set to true to be able to monitor the status of a job.
 	 */
-	public static function enqueueAt($at, $queue, $class, $args = array())
+	public static function enqueueAt($at, $queue, $class, $args = array(), $trackStatus = false)
 	{
 		self::validateJob($class, $queue);
 
-		$job = self::jobToHash($queue, $class, $args);
+		$id = Resque::generateJobId();
+		$job = self::jobToHash($queue, $class, $args, $id, $trackStatus);
 		self::delayedPush($at, $job);
+
+		if($trackStatus) {
+			Resque_Job_Status::create($id, Resque_Job_Status::STATUS_DELAYED);
+		}
 
 		Resque_Event::trigger('afterSchedule', array(
 			'at'    => $at,
 			'queue' => $queue,
 			'class' => $class,
 			'args'  => $args,
+			'id' => $id
 		));
+
+		return $id;
 	}
 
 	/**
@@ -91,6 +101,7 @@ class ResqueScheduler
 		return Resque::redis()->llen('delayed:' . $timestamp, $timestamp);
 	}
 
+	// TODO: Re-implement removeDelayed after adding status tracking to job hash
     /**
      * Remove a delayed job from the queue
      *
@@ -106,7 +117,7 @@ class ResqueScheduler
      * @param $args
      * @return int number of jobs that were removed
      */
-    public static function removeDelayed($queue, $class, $args)
+    /*public static function removeDelayed($queue, $class, $args)
     {
        $destroyed=0;
        $item=json_encode(self::jobToHash($queue, $class, $args));
@@ -119,7 +130,7 @@ class ResqueScheduler
        }
 
        return $destroyed;
-    }
+    }*/
 
     /**
      * removed a delayed job queued for a specific timestamp
@@ -134,7 +145,7 @@ class ResqueScheduler
      * @param $args
      * @return mixed
      */
-    public static function removeDelayedJobFromTimestamp($timestamp, $queue, $class, $args)
+    /*public static function removeDelayedJobFromTimestamp($timestamp, $queue, $class, $args)
     {
         $key = 'delayed:' . self::getTimestamp($timestamp);
         $item = json_encode(self::jobToHash($queue, $class, $args));
@@ -143,7 +154,7 @@ class ResqueScheduler
         self::cleanupTimestamp($key, $timestamp);
 
         return $count;
-    }
+    }*/
 
 	/**
 	 * Generate hash of all job properties to be saved in the scheduled queue.
@@ -153,12 +164,14 @@ class ResqueScheduler
 	 * @param array $args Array of job arguments.
 	 */
 
-	private static function jobToHash($queue, $class, $args)
+	private static function jobToHash($queue, $class, $args, $id, $trackStatus)
 	{
 		return array(
 			'class' => $class,
 			'args'  => array($args),
 			'queue' => $queue,
+			'id' => $id,
+			'trackStatus' => $trackStatus
 		);
 	}
 

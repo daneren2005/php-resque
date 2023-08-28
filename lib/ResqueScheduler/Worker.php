@@ -81,7 +81,7 @@ class ResqueScheduler_Worker
 				'args'  => $item['args'],
 			));
 
-			$payload = array_merge(array($item['queue'], $item['class']), $item['args']);
+			$payload = array_merge(array($item['queue'], $item['class']), $item['args'], array($item['trackStatus'], $item['id']));
 			call_user_func_array('Resque::enqueue', $payload);
 		}
 	}

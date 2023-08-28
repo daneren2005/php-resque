@@ -12,6 +12,7 @@ class Resque_Job_Status
 	const STATUS_RUNNING = 2;
 	const STATUS_FAILED = 3;
 	const STATUS_COMPLETE = 4;
+	const STATUS_DELAYED = 5;
 
 	/**
 	 * @var string The ID of the job this status class refers back to.
@@ -47,11 +48,12 @@ class Resque_Job_Status
 	 * all necessary keys in Redis to monitor the status of a job.
 	 *
 	 * @param string $id The ID of the job to monitor the status of.
+	 * @param int $startStatus The start status of the job - defaults to STATUS_WAITING
 	 */
-	public static function create($id)
+	public static function create($id, $startStatus = Resque_Job_Status::STATUS_WAITING)
 	{
 		$statusPacket = array(
-			'status' => self::STATUS_WAITING,
+			'status' => $startStatus,
 			'updated' => time(),
 			self::statusToString(self::STATUS_WAITING) => time(),
 			'started' => time(),
