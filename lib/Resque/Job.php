@@ -182,6 +182,10 @@ class Resque_Job
 		return $this->instance;
 	}
 
+	public function getClass() {
+		return $this->payload['class'];
+	}
+
 	/**
 	 * Actually execute a job by calling the perform method on the class
 	 * associated with the job with the supplied arguments.
@@ -230,11 +234,18 @@ class Resque_Job
 	public function fail($exception) {
 		Resque::redis()->lrem('working:' . $this->queue, 0, $this->payload['id']);
 		Resque::redis()->del('job:' . $this->payload['id'] . ':worker');
-		Resque_Event::trigger('onFailure', array(
-			'exception' => $exception,
-			'job' => $this,
-		));
+		try {
+			Resque_Event::trigger('onFailure', array(
+				'exception' => $exception,
+				'job' => $this,
+			));
+		} catch(Throwable $e) {
+			if($this->worker) {
+				$this->worker->logger->log(Psr\Log\LogLevel::EMERGENCY, 'Failed to report onFailure for {job}: {stack}', array('job' => $this, 'stack' => $e->getMessage()));
+			}
+		}
 
+		// TODO: Track if we are retrying this instead of marking it as failed after putting in a delayed queue
 		$this->updateStatus(Resque_Job_Status::STATUS_FAILED);
 		Resque_Failure::create(
 			$this->payload,

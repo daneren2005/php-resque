@@ -41,11 +41,13 @@ class ResqueScheduler
 	 * @param array $args Any optional arguments that should be passed when the job is executed.
 	 * @param boolean $trackStatus Set to true to be able to monitor the status of a job.
 	 */
-	public static function enqueueAt($at, $queue, $class, $args = array(), $trackStatus = false)
+	public static function enqueueAt($at, $queue, $class, $args = array(), $trackStatus = false, $id = null)
 	{
 		self::validateJob($class, $queue);
 
-		$id = Resque::generateJobId();
+		if(!$id) {
+			$id = Resque::generateJobId();
+		}
 		$job = self::jobToHash($queue, $class, $args, $id, $trackStatus);
 		self::delayedPush($at, $job);
 
