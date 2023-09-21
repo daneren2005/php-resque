@@ -1,4 +1,7 @@
 <?php
+require_once(__DIR__ . '/Resque/Plugin/Retry.php');
+require_once(__DIR__ . '/Resque/Plugin/ExponentialRetry.php');
+
 /**
  * Base Resque class.
  *

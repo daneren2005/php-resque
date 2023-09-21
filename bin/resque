@@ -47,6 +47,8 @@ if(!empty($REDIS_BACKEND)) {
 		Resque::setBackend($REDIS_BACKEND, $REDIS_BACKEND_DB);
 }
 
+Resque_Plugin::initialize();
+
 $logLevel = false;
 $LOGGING = getenv('LOGGING');
 $VERBOSE = getenv('VERBOSE');
