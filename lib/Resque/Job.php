@@ -239,13 +239,19 @@ class Resque_Job
 				'exception' => $exception,
 				'job' => $this,
 			));
+		} catch(Resque_Job_IsRetryingException $e) {
+			if($this->worker) {
+				$this->worker->logger->log(Psr\Log\LogLevel::DEBUG, 'onFailure is triggering a retry so do not mark status as failed for {job}', array('job' => $this));
+			}
+
+			$this->updateStatus(Resque_Job_Status::STATUS_RETRYING);
+			return;
 		} catch(Throwable $e) {
 			if($this->worker) {
 				$this->worker->logger->log(Psr\Log\LogLevel::EMERGENCY, 'Failed to report onFailure for {job}: {stack}', array('job' => $this, 'stack' => $e->getMessage()));
 			}
 		}
 
-		// TODO: Track if we are retrying this instead of marking it as failed after putting in a delayed queue
 		$this->updateStatus(Resque_Job_Status::STATUS_FAILED);
 		Resque_Failure::create(
 			$this->payload,

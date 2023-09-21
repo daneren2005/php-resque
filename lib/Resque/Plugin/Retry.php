@@ -14,6 +14,8 @@ class Resque_Retry {
 		if ($this->retryCriteriaValid($exception, $job)) {
 			$this->tryAgain($exception, $job);
 			$job->retryKey = $this->redisRetryKey($job);
+
+			throw new Resque_Job_IsRetryingException();
 		} else {
 			$this->cleanRetryKey($job);
 		}
