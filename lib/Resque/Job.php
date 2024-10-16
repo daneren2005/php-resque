@@ -214,7 +214,7 @@ class Resque_Job
 			$removed = Resque::redis()->lrem('working:' . $this->queue, 0, $this->payload['id']);
 			Resque::redis()->del('job:' . $this->payload['id'] . ':worker');
 			if($removed <= 0) {
-				$this->logger->log(Psr\Log\LogLevel::WARNING, $this->payload['id'] . ' was not removed from working: ' . $this->queue . ', retrying in 250ms.');
+				$this->worker->logger->log(Psr\Log\LogLevel::WARNING, $this->payload['id'] . ' was not removed from working: ' . $this->queue . ', retrying in 250ms.');
 				usleep(250000);
 
 				$removed = Resque::redis()->lrem('working:' . $this->queue, 0, $this->payload['id']);
